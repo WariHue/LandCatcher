@@ -16,6 +16,7 @@ import org.bukkit.FluidCollisionMode
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.block.Action
@@ -25,7 +26,7 @@ class WeaponConceptGun: WeaponConcept(){
 
     var bulletGravity = 0.001
 
-    var bulletSize = 1
+    var bulletSize = 0.3
 
     var item: ItemStack = ItemStack(Material.NETHERITE_HOE);
     init {

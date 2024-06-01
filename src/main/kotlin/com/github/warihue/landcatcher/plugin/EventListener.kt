@@ -39,6 +39,7 @@ class EventListener(
         if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             event.item?.let { item ->
                 if(item.type == Material.NETHERITE_HOE){
+                    var location = player.eyeLocation
                     player.setCooldown(item.type, 20)
                     val projectile = BulletProjectile(player).apply {
                         bullet =
@@ -48,12 +49,13 @@ class EventListener(
                                     isMarker = true
                                 }
                                 updateEquipment {
-                                    helmet = ItemStack(Material.COBBLESTONE)
+                                    helmet = ItemStack(Material.IRON_BLOCK)
                                 }
                             }
                     }
+                    launchProjectile(location, projectile)
+                    projectile.velocity = location.direction.multiply(4)
 
-                    launchProjectile(player.location, projectile)
                 }
             }
         }
