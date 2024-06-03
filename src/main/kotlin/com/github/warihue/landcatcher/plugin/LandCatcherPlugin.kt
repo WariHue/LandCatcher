@@ -1,6 +1,6 @@
 package com.github.warihue.landcatcher.plugin
 
-import com.github.warihue.landcatcher.core.LandCatcher
+import com.github.warihue.landcatcher.test
 import org.bukkit.plugin.java.JavaPlugin
 import io.github.monun.tap.event.EntityEventManager
 import io.github.monun.tap.fake.FakeEntityServer
@@ -10,30 +10,26 @@ import java.util.*
 
 
 class LandCatcherPlugin: JavaPlugin() {
-    lateinit var fakeEntityServer: FakeEntityServer
-        private set
-
-    lateinit var entityEventManager: EntityEventManager
-        private set
-
     var players: MutableList<Player> = mutableListOf()
+    companion object {
+        lateinit var instance: LandCatcherPlugin
+
+        lateinit var fakeServer: FakeEntityServer
+    }
 
     override fun onEnable() {
-        fakeEntityServer = FakeEntityServer.create(this)
-        loadModules()
-        LandCatcher.initialize(this, logger, fakeEntityServer)
-    }
-    private fun loadModules() {
-        entityEventManager = EntityEventManager(this)
-        server.apply {
-            pluginManager.registerEvents(
-                EventListener(
-                    fakeEntityServer,
-                    this@LandCatcherPlugin
-                ), this@LandCatcherPlugin
-            )
-            scheduler.runTaskTimer(this@LandCatcherPlugin, SchedulerTask(fakeEntityServer), 0L, 1L)
-        }
+        instance = this
+
+        fakeServer = FakeEntityServer.create(this)
+
+        server.scheduler.runTaskTimer(this, fakeServer::update, 0L, 1L)
+
+        server.pluginManager.registerEvents(EventListener(), this)
+
+        server.pluginManager.registerEvents(test(), this)
     }
 
+    override fun onDisable() {
+        server.scheduler.cancelTasks(this)
+    }
 }

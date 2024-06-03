@@ -57,7 +57,6 @@ object DamageSupport {
         knockbackSource: Location? = damager.location,
         knockbackForce: Double = 0.0
     ): Double {
-        server.broadcast(text("a"))
         return lCatchDamageActual(damageType, damage, damager, knockbackSource, knockbackForce)
     }
 
@@ -68,12 +67,10 @@ object DamageSupport {
         knockbackSource: Location? = damager.location,
         knockbackForce: Double = 0.0
     ): Double {
-        server.broadcast(text(damage))
         val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
         val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
         val protection = getProtection(type.protection)
         val actualDamage = calculateMinecraftDamage(damage, armor, armorTough, protection.toDouble())
-        server.broadcast(text(actualDamage))
         killer = damager
         if (knockbackSource != null && knockbackForce > 0.0) {
             val targetLocation = location
