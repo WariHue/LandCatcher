@@ -1,5 +1,6 @@
 package com.github.warihue.landcatcher.plugin
 
+import com.github.warihue.landcatcher.Team
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -11,6 +12,9 @@ import com.github.warihue.landcatcher.core.damage.DamageType
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
+import org.bukkit.event.Cancellable
+import org.bukkit.event.block.Action
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
@@ -19,12 +23,19 @@ class EventListener : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         LandCatcherPlugin.fakeServer.addPlayer(event.player)
+//        LandCatcherPlugin.instance.players[event.player] = LCatchPlayer(event.player.uniqueId, event.player, Team.NONE)
+//        LandCatcherPlugin.instance.teams[Team.NONE]!!.add(LCatchPlayer(event.player.uniqueId, event.player, Team.NONE))
     }
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         LandCatcherPlugin.fakeServer.removePlayer(event.player)
     }
+
+//    @EventHandler
+//    fun playerInteract(event: PlayerInteractEvent) {
+//        if(event.action != Action.RIGHT_CLICK_AIR || event.action != Action.LEFT_CLICK_AIR || event.action != Action.LEFT_CLICK_AIR) event.isCancelled = true
+//    }
 
     @EventHandler
     fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {

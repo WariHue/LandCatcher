@@ -16,7 +16,7 @@ class test: Listener {
     fun playerInteract(event: PlayerInteractEvent) {
         val player = event.player
         val action = event.action
-        if(action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK && player.inventory.itemInMainHand.type == Material.NETHERITE_HOE) {
+        if(action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) if(player.inventory.itemInMainHand.type == Material.NETHERITE_HOE) {
             val location = player.eyeLocation
             val loc = player.location
             val subProjectile = Bullet(
@@ -24,8 +24,8 @@ class test: Listener {
             )
             val bullet = subProjectile.setToLaunch()
 
-            val a =  Bullet.manager.launch(loc, bullet)
-            bullet.velocity = player.eyeLocation.direction.multiply(1000)
+            Bullet.manager.launch(loc, bullet)
+            bullet.velocity = location.direction.multiply(3)
         }
     }
 }

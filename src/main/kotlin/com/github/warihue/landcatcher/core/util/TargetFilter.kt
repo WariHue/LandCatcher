@@ -1,42 +1,17 @@
 package com.github.warihue.landcatcher.core.util
 
+import com.github.warihue.landcatcher.Team
+import com.github.warihue.landcatcher.plugin.LandCatcherPlugin
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
-import org.bukkit.scoreboard.Team
 import java.util.function.Predicate
 
-class TargetFilter(
-    private val player: Player,
-    private val team: Team? = Bukkit.getScoreboardManager().mainScoreboard.getEntryTeam(player.name)
-) : Predicate<Entity> {
-    private var hostile = true
-
-    override fun test(t: Entity): Boolean {
-        if (t === player) return false
-
-        if (t is LivingEntity && t.isValid && t.health > 0.0) {
-            if (t is Player) {
-                val gameMode = t.gameMode
-                if (gameMode == GameMode.SPECTATOR || gameMode == GameMode.CREATIVE) return false
-            }
-
-            val team = team ?: return hostile
-            val name = if (t is Player) t.name else t.uniqueId.toString()
-            val result = team.hasEntry(name)
-            return if (hostile) !result else result
-        }
-
+fun TargetFilter(player: Player, team: Team): Boolean {
+    if(LandCatcherPlugin.instance.teams[team]!!.find { lCatchPlayer -> lCatchPlayer.player == player } != null){
         return false
     }
-
-    fun friendly() {
-        hostile = false
-    }
+    return true
 }
-
-fun Player.friendlyFilter() = TargetFilter(this).apply { friendly() }
-
-fun Player.hostileFilter() = TargetFilter(this)

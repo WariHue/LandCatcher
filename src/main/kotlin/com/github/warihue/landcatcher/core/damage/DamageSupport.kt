@@ -87,9 +87,10 @@ object DamageSupport {
                 val newVelocity = Vector().apply {
                     // 수평 속도를 절반 줄이고 넉백 속도 적용
                     x = oldVelocity.x / 2.0 - knockBackVelocity.x
+                    if(x.isFinite()) x = 0.1
                     z = oldVelocity.z / 2.0 - knockBackVelocity.z
                     // 대상이 공중에 있을경우 수직 속도를 절반 줄이고 넉백 힘 만큼 적용
-                    y = if (isOnGround) min(0.4, oldVelocity.y / 2.0 + force) else oldVelocity.y
+                    y = oldVelocity.y
                 }
 
                 velocity = newVelocity
