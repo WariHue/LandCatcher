@@ -9,22 +9,30 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchDamage
 import com.github.warihue.landcatcher.core.damage.DamageType
+import com.github.warihue.landcatcher.core.util.ChunkManager
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
+import org.bukkit.entity.Item
 import org.bukkit.event.Cancellable
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
+import org.bukkit.inventory.ItemStack
 
 class EventListener : Listener {
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         LandCatcherPlugin.fakeServer.addPlayer(event.player)
-//        LandCatcherPlugin.instance.players[event.player] = LCatchPlayer(event.player.uniqueId, event.player, Team.NONE)
-//        LandCatcherPlugin.instance.teams[Team.NONE]!!.add(LCatchPlayer(event.player.uniqueId, event.player, Team.NONE))
+        LandCatcherPlugin.instance.players[event.player] = Team.BLUE
+        LandCatcherPlugin.instance.teams[Team.BLUE]!!.add(event.player)
+
     }
 
     @EventHandler
@@ -51,6 +59,16 @@ class EventListener : Listener {
         for(en:Entity in entities){
             if(en is LivingEntity)
                 en.lCatchDamage(DamageType.MELEE, event.damage, player, event.entity.location, 2.0)
+        }
+    }
+
+    @EventHandler
+    fun onPlayerSwapHandItemsEvent(event: PlayerSwapHandItemsEvent){
+        if(event.mainHandItem != null && event.mainHandItem!!.type == Material.FILLED_MAP && event.mainHandItem!!.itemMeta.displayName() == text("점령 표시기").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false)){
+            event.isCancelled = true
+            if(event.isCancelled) {
+                event.player.inventory.setItemInOffHand(null)
+            }
         }
     }
 }

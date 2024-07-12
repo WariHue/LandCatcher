@@ -27,7 +27,7 @@ dependencies {
     implementation(kotlin("reflect"))
     paperweight.paperDevBundle(libs.versions.paper)
 
-//    implementation("io.github.monun:kommand-api:latest.release")
+    implementation("io.github.monun:kommand-api:3.1.7")
     implementation("io.github.monun:tap-api:4.9.8")
     implementation("io.github.monun:invfx-api:3.3.2")
 //    implementation("io.github.monun:heartbeat-coroutines:latest.release")

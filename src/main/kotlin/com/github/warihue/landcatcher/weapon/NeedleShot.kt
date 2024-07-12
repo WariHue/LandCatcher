@@ -1,6 +1,7 @@
 package com.github.warihue.landcatcher.weapon
 
 import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchDamage
+import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchHeal
 import com.github.warihue.landcatcher.core.damage.DamageType
 import com.github.warihue.landcatcher.core.util.TargetFilter
 import com.github.warihue.landcatcher.plugin.LandCatcherPlugin
@@ -15,21 +16,15 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.EulerAngle
 import org.bukkit.util.Vector
 
-open class Bullet(
+open class NeedleShot(
     private val shooter: Player
-): FakeProjectile(1200, 64.0) {
+): FakeProjectile(2400, 64.0) {
     private lateinit var bulletArmor: FakeEntity<ArmorStand>
-
-    val wand: ItemStack = ItemStack(Material.NETHERITE_HOE).apply {
-        var meta: ItemMeta = this.itemMeta
-        meta.displayName(text("총"))
-//        meta.removeAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE)
-//        meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, AttributeModifier())
-    }
-
     companion object{
         val manager = FakeProjectileManager()
     }
@@ -40,12 +35,12 @@ open class Bullet(
             isVisible = false
             isMarker = true
             updateEquipment {
-                helmet = ItemStack(Material.STONE_BUTTON)
+                helmet = ItemStack(Material.GOLD_BLOCK)
             }
         }
     }
 
-    fun setToLaunch(): Bullet {
+    fun setToLaunch(): NeedleShot {
         return apply { bulletArmor = summonBulletArmor(shooter.location) }
     }
 
@@ -55,7 +50,7 @@ open class Bullet(
 
         bulletArmor.updateMetadata { onCustomMoving() }
 
-        shooter.world.spawnParticle(Particle.DUST_COLOR_TRANSITION, bulletArmor.location.add(0.0,1.68,0.0), 1, 0.01, 0.01, 0.01, Particle.DustTransition(Color.BLACK, Color.BLACK, 1f))
+        shooter.world.spawnParticle(Particle.DUST_COLOR_TRANSITION, bulletArmor.location.add(0.0,1.68,0.0), 1, 0.01, 0.01, 0.01, Particle.DustTransition(Color.GREEN, Color.GREEN, 1f))
     }
 
     final override fun onTrail(trail: Trail) {
@@ -77,21 +72,26 @@ open class Bullet(
                 null
             )?.let { result ->
                 val hitEntity = result.hitEntity
+                if(hitEntity == shooter) return
                 if(hitEntity != null && hitEntity is LivingEntity) {
-                    if(hitEntity is Player && !TargetFilter(hitEntity, LandCatcherPlugin.instance.players[shooter]!!)) return
+                    if(hitEntity is Player && !TargetFilter((hitEntity as Player), LandCatcherPlugin.instance.players[shooter]!!)) {
+                        val hitLocation = result.hitPosition.toLocation(world)
+                        hitEntity.lCatchHeal(6.0);
+                        world.spawnParticle(Particle.HEART, hitLocation, 3, 0.2, 0.2, 0.2, 4.0)
+                        world.playSound(hitLocation, Sound.ENTITY_SPLASH_POTION_BREAK, 2.0F, 2.0F)
+                        remove()
+                    }
                     bulletArmor.updateMetadata {
                         val hitLocation = result.hitPosition.toLocation(world)
-                        hitEntity.lCatchDamage(DamageType.RANGED, 10.0, shooter, shooter.location, 0.2)
+                        hitEntity.addPotionEffect(PotionEffect(PotionEffectType.POISON, 40, 3, false, false, false))
                         world.spawnParticle(
-                            Particle.BLOCK_DUST,
+                            Particle.SLIME,
                             hitLocation,
-                            32,
-                            0.0,
-                            0.0,
-                            0.0,
-                            4.0,
-                            Material.IRON_BLOCK.createBlockData(),
-                            true
+                            5,
+                            1.0,
+                            1.0,
+                            1.0,
+                            4.0
                         )
                         world.playSound(hitLocation, Sound.ENTITY_SPLASH_POTION_BREAK, 2.0F, 2.0F)
                         remove()
@@ -99,15 +99,13 @@ open class Bullet(
                 }
                 val hitLocation = result.hitPosition.toLocation(world)
                 world.spawnParticle(
-                    Particle.BLOCK_DUST,
+                    Particle.SLIME,
                     hitLocation,
-                    32,
-                    0.0,
-                    0.0,
-                    0.0,
-                    4.0,
-                    Material.IRON_BLOCK.createBlockData(),
-                    true
+                    5,
+                    0.2,
+                    0.2,
+                    0.2,
+                    4.0
                 )
                 world.playSound(hitLocation, Sound.ENTITY_SPLASH_POTION_BREAK, 2.0F, 2.0F)
                 remove()

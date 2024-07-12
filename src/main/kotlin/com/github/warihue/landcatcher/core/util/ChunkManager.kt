@@ -37,6 +37,14 @@ object ChunkManager {
         LandCatcherPlugin.instance.chunks[Team.RED]!!.remove(Pair(chunk.x, chunk.z))
     }
 
+    fun addChunkMaster(team: Team, chunk: Chunk):Boolean {
+        if(checkChunkTaking(chunk))
+            return false
+        removeChunk(chunk)
+        LandCatcherPlugin.instance.chunks[team]!!.add(Pair(chunk.x, chunk.z))
+        return true
+    }
+
     fun addChunkOnBlank(team: Team, chunk: Chunk): Boolean {
         if(!checkChunkTaking(chunk)){
             return addChunk(team, chunk)

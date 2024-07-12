@@ -87,8 +87,9 @@ object DamageSupport {
                 val newVelocity = Vector().apply {
                     // 수평 속도를 절반 줄이고 넉백 속도 적용
                     x = oldVelocity.x / 2.0 - knockBackVelocity.x
-                    if(x.isFinite()) x = 0.1
+                    if(x.isFinite()) x = x.toInt().toDouble()
                     z = oldVelocity.z / 2.0 - knockBackVelocity.z
+                    if(z.isFinite()) z = z.toInt().toDouble()
                     // 대상이 공중에 있을경우 수직 속도를 절반 줄이고 넉백 힘 만큼 적용
                     y = oldVelocity.y
                 }
@@ -110,5 +111,17 @@ object DamageSupport {
         } else damage(actualDamage)
 
         return actualDamage
+    }
+
+    fun LivingEntity.lCatchHeal(
+        amount: Double
+    ): Double {
+        if (!isValid) return 0.0
+
+        val currentHealth = health; if (currentHealth <= 0.0) return 0.0
+
+        if(maxHealth <= amount + health) health = maxHealth else health += amount
+
+        return amount
     }
 }
