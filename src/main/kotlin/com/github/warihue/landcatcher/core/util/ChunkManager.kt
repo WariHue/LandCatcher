@@ -25,6 +25,14 @@ object ChunkManager {
         }
     }
 
+    private fun checkChuckOwner(chunk: Chunk): Team {
+        if(LandCatcherPlugin.instance.chunks[Team.BLUE]!!.contains(Pair(chunk.x, chunk.z))) return Team.BLUE
+        if(LandCatcherPlugin.instance.chunks[Team.RED]!!.contains(Pair(chunk.x, chunk.z))) return Team.RED
+        if(LandCatcherPlugin.instance.chunks[Team.YELLOW]!!.contains(Pair(chunk.x, chunk.z))) return Team.YELLOW
+        if(LandCatcherPlugin.instance.chunks[Team.GREEN]!!.contains(Pair(chunk.x, chunk.z))) return Team.GREEN
+        return Team.NONE
+    }
+
     private fun checkChunkTaking(chunk: Chunk): Boolean {
         return LandCatcherPlugin.instance.chunks.values.any { pairs: MutableList<Pair<Int, Int>>? -> pairs!!.any{ pair: Pair<Int, Int> -> pair == Pair(chunk.x, chunk.z) } }
     }
@@ -54,5 +62,13 @@ object ChunkManager {
 
     fun addChunkOnAnother(team: Team, chunk: Chunk): Boolean {
         return addChunk(team, chunk)
+    }
+
+    fun addChunkOnAnother(team: Team, owner: Team, chunk: Chunk): Boolean {
+        val lander = checkChuckOwner(chunk)
+        if (lander == Team.NONE) return false
+        if(lander == owner)
+            return addChunk(team, chunk)
+        return false
     }
 }

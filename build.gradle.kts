@@ -27,10 +27,11 @@ dependencies {
     implementation(kotlin("reflect"))
     paperweight.paperDevBundle(libs.versions.paper)
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation("io.github.monun:kommand-api:3.1.7")
     implementation("io.github.monun:tap-api:4.9.8")
     implementation("io.github.monun:invfx-api:3.3.2")
-//    implementation("io.github.monun:heartbeat-coroutines:latest.release")
+    implementation("io.github.monun:heartbeat-coroutines:0.0.5")
 }
 
 extra.apply {

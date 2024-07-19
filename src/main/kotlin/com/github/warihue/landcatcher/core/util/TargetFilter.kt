@@ -15,3 +15,7 @@ fun TargetFilter(player: Player, team: Team): Boolean {
     }
     return true
 }
+
+fun TargetFilter(livingEntity: Collection<LivingEntity>, team: Team): List<LivingEntity> {
+    return livingEntity.filter { lCatchPlayer -> !LandCatcherPlugin.instance.teams[team]!!.contains(lCatchPlayer) }
+}

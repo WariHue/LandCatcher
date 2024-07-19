@@ -23,16 +23,32 @@ class ChunkMapRenderer: MapRenderer() {
             }
         }
         for (data in LandCatcherPlugin.instance.chunks[Team.BLUE]!!){
-            mapCanvas.setPixelColor(data.first + 64, data.second + 64, Color.BLUE)
+            for (x in 0 ..3){
+                for (y in 0..3){
+                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.BLUE)
+                }
+            }
         }
         for (data in LandCatcherPlugin.instance.chunks[Team.RED]!!){
-            mapCanvas.setPixelColor(data.first + 64, data.second + 64, Color.RED)
+            for (x in 0 ..3){
+                for (y in 0..3){
+                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.RED)
+                }
+            }
         }
         for (data in LandCatcherPlugin.instance.chunks[Team.GREEN]!!){
-            mapCanvas.setPixelColor(data.first + 64, data.second + 64, Color.GREEN)
+            for (x in 0 ..3){
+                for (y in 0..3){
+                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.GREEN)
+                }
+            }
         }
         for (data in LandCatcherPlugin.instance.chunks[Team.YELLOW]!!){
-            mapCanvas.setPixelColor(data.first + 64, data.second + 64, Color.YELLOW)
+            for (x in 0 ..3){
+                for (y in 0..3){
+                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.YELLOW)
+                }
+            }
         }
         val cursors = mapCanvas.cursors
         val onlinePlayers = Bukkit.getOnlinePlayers()
@@ -52,8 +68,8 @@ class ChunkMapRenderer: MapRenderer() {
 
         val playerLocation = player.location
 
-        val cursorX = -((playerLocation.x) / 8).toInt()
-        val cursorZ = -((playerLocation.z) / 8).toInt()
+        val cursorX = -((playerLocation.x) / 2).toInt()
+        val cursorZ = -((playerLocation.z) / 2).toInt()
 
         val direction = ((playerLocation.yaw % 360) / 22.5).toInt().let {
             if (it < 0) it + 16 else it
@@ -71,10 +87,10 @@ class ChunkMapRenderer: MapRenderer() {
                 cursorX.toByte(),
                 cursorZ.toByte(),
                 direction,
-                if(LandCatcherPlugin.instance.players[player] == Team.BLUE) MapCursor.Type.BANNER_BLUE
-                else if(LandCatcherPlugin.instance.players[player] == Team.RED) MapCursor.Type.BANNER_RED
-                else if(LandCatcherPlugin.instance.players[player] == Team.GREEN) MapCursor.Type.BANNER_GREEN
-                else if(LandCatcherPlugin.instance.players[player] == Team.YELLOW) MapCursor.Type.BANNER_YELLOW
+                if(LandCatcherPlugin.instance.players[player]!!.team == Team.BLUE) MapCursor.Type.BANNER_BLUE
+                else if(LandCatcherPlugin.instance.players[player]!!.team == Team.RED) MapCursor.Type.BANNER_RED
+                else if(LandCatcherPlugin.instance.players[player]!!.team == Team.GREEN) MapCursor.Type.BANNER_GREEN
+                else if(LandCatcherPlugin.instance.players[player]!!.team == Team.YELLOW) MapCursor.Type.BANNER_YELLOW
                 else MapCursor.Type.SMALL_WHITE_CIRCLE,
                 true
             )

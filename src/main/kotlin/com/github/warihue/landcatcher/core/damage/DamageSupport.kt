@@ -14,8 +14,7 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.entity.EnderDragon
 import org.bukkit.entity.Mob
 import org.bukkit.util.Vector
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 object DamageSupport {
     fun calculateMinecraftDamage(damage: Double, armor: Double, armorTough: Double, protection: Double): Double {
         return damage * (1.0 - min(
@@ -123,5 +122,25 @@ object DamageSupport {
         if(maxHealth <= amount + health) health = maxHealth else health += amount
 
         return amount
+    }
+
+    fun calculateAngle(x: Double, y: Double, theta: Double): Double {
+        // theta는 A가 보는 방향의 각도입니다.
+        val radian = Math.toRadians(theta)
+
+        // 충돌 지점 (x, y)를 회전 변환합니다.
+        val rotatedX = x * cos(-radian) - y * sin(-radian)
+        val rotatedY = x * sin(-radian) + y * cos(-radian)
+
+        // 회전된 벡터와 (1, 0) 사이의 각도를 계산합니다.
+        val dotProduct = rotatedX // (1 * rotatedX + 0 * rotatedY)
+        val magnitudeA = 1.0
+        val magnitudeB = sqrt(rotatedX * rotatedX + rotatedY * rotatedY)
+
+        val cosTheta = dotProduct / (magnitudeA * magnitudeB)
+        val angle = acos(cosTheta) // 라디안 단위
+
+        // 각도를 도 단위로 변환
+        return Math.toDegrees(angle)
     }
 }

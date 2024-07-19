@@ -1,5 +1,6 @@
 package com.github.warihue.landcatcher.weapon
 
+import com.github.warihue.landcatcher.core.damage.DamageSupport.calculateAngle
 import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchDamage
 import com.github.warihue.landcatcher.core.damage.DamageType
 import com.github.warihue.landcatcher.core.util.TargetFilter
@@ -8,18 +9,16 @@ import io.github.monun.tap.fake.*
 import io.github.monun.tap.math.normalizeAndLength
 import net.kyori.adventure.text.Component.text
 import org.bukkit.*
-import org.bukkit.attribute.Attribute
-import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
-import org.bukkit.util.EulerAngle
 import org.bukkit.util.Vector
 
 open class Bullet(
-    private val shooter: Player
+    private val shooter: Player,
+    private val damage: Double
 ): FakeProjectile(1200, 64.0) {
     private lateinit var bulletArmor: FakeEntity<ArmorStand>
 
@@ -40,7 +39,7 @@ open class Bullet(
             isVisible = false
             isMarker = true
             updateEquipment {
-                helmet = ItemStack(Material.STONE_BUTTON)
+                helmet = ItemStack(Material.IRON_NUGGET)
             }
         }
     }
@@ -70,7 +69,7 @@ open class Bullet(
             world.rayTrace(
                 trail.from,
                 v,
-                range,
+                length,
                 FluidCollisionMode.NEVER,
                 true,
                 1.0,
@@ -78,10 +77,23 @@ open class Bullet(
             )?.let { result ->
                 val hitEntity = result.hitEntity
                 if(hitEntity != null && hitEntity is LivingEntity) {
-                    if(hitEntity is Player && !TargetFilter(hitEntity, LandCatcherPlugin.instance.players[shooter]!!)) return
+                    if(hitEntity is Player && !TargetFilter(hitEntity, LandCatcherPlugin.instance.players[shooter]!!.team)) return
                     bulletArmor.updateMetadata {
                         val hitLocation = result.hitPosition.toLocation(world)
-                        hitEntity.lCatchDamage(DamageType.RANGED, 10.0, shooter, shooter.location, 0.2)
+                        if(hitEntity.activeItem.type == Material.SHIELD) {
+                            if (calculateAngle(
+                                    hitLocation.x - hitEntity.x,
+                                    hitLocation.z - hitEntity.z,
+                                    (hitEntity.yaw + 90).toDouble()
+                                ) < 45
+                            ) {
+                                hitEntity.activeItem.itemMeta.apply {
+                                    damage(damage - this@Bullet.damage)
+                                }
+                                return@updateMetadata
+                            }
+                        }
+                        hitEntity.lCatchDamage(DamageType.RANGED, damage, shooter, shooter.location, 0.2)
                         world.spawnParticle(
                             Particle.BLOCK_DUST,
                             hitLocation,

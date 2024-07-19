@@ -1,14 +1,13 @@
 package com.github.warihue.landcatcher.plugin
 
+import com.github.warihue.landcatcher.Job
 import com.github.warihue.landcatcher.Team
-import com.github.warihue.landcatcher.core.ChunkMapRenderer
-import com.github.warihue.landcatcher.core.damageGun
-import com.github.warihue.landcatcher.core.healGun
-import com.github.warihue.landcatcher.core.masterLandCatcher
 import com.github.warihue.landcatcher.core.util.DataManager
-import com.github.warihue.landcatcher.GunsEventListener
-import com.github.warihue.landcatcher.weapon.Bullet
-import com.github.warihue.landcatcher.weapon.NeedleShot
+import com.github.warihue.landcatcher.LCatchPlayer
+import com.github.warihue.landcatcher.core.*
+import com.github.warihue.landcatcher.core.inventory.MenuGUI.openMenu
+import com.github.warihue.landcatcher.weapon.*
+import io.github.monun.kommand.getValue
 import io.github.monun.kommand.kommand
 import org.bukkit.plugin.java.JavaPlugin
 import io.github.monun.tap.fake.FakeEntityServer
@@ -26,7 +25,7 @@ import kotlin.collections.HashMap
 
 
 class LandCatcherPlugin: JavaPlugin() {
-    var players: HashMap<Player ,Team> = HashMap()
+    var players: HashMap<Player ,LCatchPlayer> = HashMap()
     var teams: EnumMap<Team, MutableList<Player>> = EnumMap(Team::class.java)
     var chunks: EnumMap<Team, MutableList<Pair<Int, Int>>> = EnumMap(Team::class.java)
     companion object {
@@ -36,11 +35,15 @@ class LandCatcherPlugin: JavaPlugin() {
 
         lateinit var overWorld: World
 
+        lateinit var itemKey: NamespacedKey
+
         var mapID: Int = 12345
     }
 
     override fun onEnable() {
         instance = this
+
+        itemKey = NamespacedKey(this, "WeaponLevel")
 
         fakeServer = FakeEntityServer.create(this)
 
@@ -52,21 +55,25 @@ class LandCatcherPlugin: JavaPlugin() {
 
         server.scheduler.runTaskTimer(this, NeedleShot.manager::update, 0L, 1L)
 
+        server.scheduler.runTaskTimer(this, Bomb.manager::update, 0L, 1L)
+
         server.pluginManager.registerEvents(EventListener(), this)
 
         server.pluginManager.registerEvents(GunsEventListener(), this)
 
+        server.pluginManager.registerEvents(ChunkItemListener(), this)
+
+        server.pluginManager.registerEvents(Dagger(), this)
+
+        server.pluginManager.registerEvents(Hammer(), this)
+
         init()
 
         if(!dataFolder.exists()) dataFolder.mkdirs()
-        logger.info(File("dataFolder", "chunks.json").exists().toString())
         if(File(dataFolder, "chunks.json").exists()) {
-            logger.info("aa")
             File(dataFolder, "chunks.json").bufferedReader().use { br ->
                 val content = br.readText()
                 chunks = DataManager.convertJsonToChunkData(content)
-                logger.info(content)
-                logger.info(DataManager.convertJsonToChunkData(content).toString())
             }
         }
 
@@ -87,23 +94,45 @@ class LandCatcherPlugin: JavaPlugin() {
                         mapMeta.mapView = mapView
                         mapItem.itemMeta = mapMeta
                         player.inventory.setItemInOffHand(mapItem)
+                        openMenu(player)
                     }else{
                         player.sendMessage(text("지도 데이터를 찾을수 없습니다. 개발자에게 문의하세요").color(NamedTextColor.RED))
                     }
-
                 }
             }
             register("catcher"){
                 requires { isPlayer }
                 executes {
-                    player.inventory.addItem(masterLandCatcher(16))
+                    val temp = masterLandCatcher()
+                    temp.amount = 15
+                    val temp1 = occupyLandCatcher()
+                    temp1.amount = 15
+                    val temp2 = stealLandCatcher(Team.RED)
+                    temp2.amount = 15
+                    val temp3 = stealLandCatcher(Team.BLUE)
+                    temp3.amount = 15
+                    val temp4 = stealLandCatcher(Team.GREEN)
+                    temp4.amount = 15
+                    val temp5 = stealLandCatcher(Team.YELLOW)
+                    temp5.amount = 15
+                    val temp6 = stealLandCatcher(Team.NONE)
+                    temp6.amount = 15
+
+                    player.inventory.addItem(temp, temp1, temp2, temp3, temp4, temp5, temp6)
                 }
             }
-            register("guns"){
+            register("weapons"){
                 requires { isPlayer }
-                executes {
-                    player.inventory.addItem(damageGun())
-                    player.inventory.addItem(healGun())
+                then("level" to int()){
+                    executes {
+                        val level: Int by it
+
+                        player.inventory.addItem(damageGun(level))
+                        player.inventory.addItem(healGun(level))
+                        player.inventory.addItem(daggerSword(level))
+                        player.inventory.addItem(hammerAxe(level))
+                        player.inventory.addItem(bombLauncher(level))
+                    }
                 }
             }
         }
