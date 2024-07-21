@@ -74,7 +74,7 @@ open class Bomb(
                         hitLocation.getNearbyEntities(ex, ex, ex).filterIsInstance<LivingEntity>(),
                         LandCatcherPlugin.instance.players[shooter]!!.team
                     )) {
-                        data.lCatchDamage(DamageType.BLAST, damage / 2, shooter)
+                        data.lCatchDamage(DamageType.BLAST, damage / 2  + 5, shooter)
                     }
                     hitLocation.world.createExplosion(hitLocation, (damage / 2).toFloat(), false, true)
                     remove()

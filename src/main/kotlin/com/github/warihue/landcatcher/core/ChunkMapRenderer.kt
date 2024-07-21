@@ -36,20 +36,6 @@ class ChunkMapRenderer: MapRenderer() {
                 }
             }
         }
-        for (data in LandCatcherPlugin.instance.chunks[Team.GREEN]!!){
-            for (x in 0 ..3){
-                for (y in 0..3){
-                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.GREEN)
-                }
-            }
-        }
-        for (data in LandCatcherPlugin.instance.chunks[Team.YELLOW]!!){
-            for (x in 0 ..3){
-                for (y in 0..3){
-                    mapCanvas.setPixelColor(((data.first - 15) * 4 - 3 + x).absoluteValue, ((data.second - 15) * 4 - 3 + y).absoluteValue, Color.YELLOW)
-                }
-            }
-        }
         val cursors = mapCanvas.cursors
         val onlinePlayers = Bukkit.getOnlinePlayers()
 
@@ -89,8 +75,6 @@ class ChunkMapRenderer: MapRenderer() {
                 direction,
                 if(LandCatcherPlugin.instance.players[player]!!.team == Team.BLUE) MapCursor.Type.BANNER_BLUE
                 else if(LandCatcherPlugin.instance.players[player]!!.team == Team.RED) MapCursor.Type.BANNER_RED
-                else if(LandCatcherPlugin.instance.players[player]!!.team == Team.GREEN) MapCursor.Type.BANNER_GREEN
-                else if(LandCatcherPlugin.instance.players[player]!!.team == Team.YELLOW) MapCursor.Type.BANNER_YELLOW
                 else MapCursor.Type.SMALL_WHITE_CIRCLE,
                 true
             )

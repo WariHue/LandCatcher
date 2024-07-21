@@ -28,8 +28,6 @@ object ChunkManager {
     private fun checkChuckOwner(chunk: Chunk): Team {
         if(LandCatcherPlugin.instance.chunks[Team.BLUE]!!.contains(Pair(chunk.x, chunk.z))) return Team.BLUE
         if(LandCatcherPlugin.instance.chunks[Team.RED]!!.contains(Pair(chunk.x, chunk.z))) return Team.RED
-        if(LandCatcherPlugin.instance.chunks[Team.YELLOW]!!.contains(Pair(chunk.x, chunk.z))) return Team.YELLOW
-        if(LandCatcherPlugin.instance.chunks[Team.GREEN]!!.contains(Pair(chunk.x, chunk.z))) return Team.GREEN
         return Team.NONE
     }
 
@@ -40,8 +38,6 @@ object ChunkManager {
     private fun removeChunk(chunk: Chunk) {
         LandCatcherPlugin.instance.chunks[Team.NONE]!!.remove(Pair(chunk.x, chunk.z))
         LandCatcherPlugin.instance.chunks[Team.BLUE]!!.remove(Pair(chunk.x, chunk.z))
-        LandCatcherPlugin.instance.chunks[Team.GREEN]!!.remove(Pair(chunk.x, chunk.z))
-        LandCatcherPlugin.instance.chunks[Team.YELLOW]!!.remove(Pair(chunk.x, chunk.z))
         LandCatcherPlugin.instance.chunks[Team.RED]!!.remove(Pair(chunk.x, chunk.z))
     }
 
@@ -70,5 +66,15 @@ object ChunkManager {
         if(lander == owner)
             return addChunk(team, chunk)
         return false
+    }
+
+    fun isChunkNotBelongTeam(team: Team, chunk: Chunk): Boolean {
+        return !LandCatcherPlugin.instance.chunks[team]!!.contains(Pair(chunk.x, chunk.z)) && LandCatcherPlugin.instance.chunks.values.flatten().toMutableList().contains(Pair(chunk.x, chunk.z))
+    }
+
+    fun isChunkEnemy(team: Team, chunk: Chunk): Boolean {
+        val temp = LandCatcherPlugin.instance.chunks.clone()
+        temp.remove(team)
+        return temp.values.flatten().toMutableList().contains(Pair(chunk.x, chunk.z))
     }
 }

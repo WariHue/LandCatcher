@@ -37,6 +37,8 @@ class LandCatcherPlugin: JavaPlugin() {
 
         lateinit var itemKey: NamespacedKey
 
+        lateinit var magneticDamage: MagneticDamage
+
         var mapID: Int = 12345
     }
 
@@ -49,6 +51,8 @@ class LandCatcherPlugin: JavaPlugin() {
 
         overWorld = server.getWorld("world")!!
 
+        magneticDamage = MagneticDamage()
+
         server.scheduler.runTaskTimer(this, fakeServer::update, 0L, 1L)
 
         server.scheduler.runTaskTimer(this, Bullet.manager::update, 0L, 1L)
@@ -56,6 +60,8 @@ class LandCatcherPlugin: JavaPlugin() {
         server.scheduler.runTaskTimer(this, NeedleShot.manager::update, 0L, 1L)
 
         server.scheduler.runTaskTimer(this, Bomb.manager::update, 0L, 1L)
+
+        server.scheduler.runTaskTimer(this, magneticDamage::update, 0L, 1L)
 
         server.pluginManager.registerEvents(EventListener(), this)
 
@@ -94,45 +100,15 @@ class LandCatcherPlugin: JavaPlugin() {
                         mapMeta.mapView = mapView
                         mapItem.itemMeta = mapMeta
                         player.inventory.setItemInOffHand(mapItem)
-                        openMenu(player)
                     }else{
                         player.sendMessage(text("지도 데이터를 찾을수 없습니다. 개발자에게 문의하세요").color(NamedTextColor.RED))
                     }
                 }
             }
-            register("catcher"){
+            register("menu"){
                 requires { isPlayer }
                 executes {
-                    val temp = masterLandCatcher()
-                    temp.amount = 15
-                    val temp1 = occupyLandCatcher()
-                    temp1.amount = 15
-                    val temp2 = stealLandCatcher(Team.RED)
-                    temp2.amount = 15
-                    val temp3 = stealLandCatcher(Team.BLUE)
-                    temp3.amount = 15
-                    val temp4 = stealLandCatcher(Team.GREEN)
-                    temp4.amount = 15
-                    val temp5 = stealLandCatcher(Team.YELLOW)
-                    temp5.amount = 15
-                    val temp6 = stealLandCatcher(Team.NONE)
-                    temp6.amount = 15
-
-                    player.inventory.addItem(temp, temp1, temp2, temp3, temp4, temp5, temp6)
-                }
-            }
-            register("weapons"){
-                requires { isPlayer }
-                then("level" to int()){
-                    executes {
-                        val level: Int by it
-
-                        player.inventory.addItem(damageGun(level))
-                        player.inventory.addItem(healGun(level))
-                        player.inventory.addItem(daggerSword(level))
-                        player.inventory.addItem(hammerAxe(level))
-                        player.inventory.addItem(bombLauncher(level))
-                    }
+                    openMenu(player)
                 }
             }
         }
@@ -149,13 +125,9 @@ class LandCatcherPlugin: JavaPlugin() {
         teams[Team.NONE] = mutableListOf()
         teams[Team.BLUE] = mutableListOf()
         teams[Team.RED] = mutableListOf()
-        teams[Team.GREEN] = mutableListOf()
-        teams[Team.YELLOW] = mutableListOf()
         chunks[Team.NONE] = mutableListOf()
         chunks[Team.BLUE] = mutableListOf()
         chunks[Team.RED] = mutableListOf()
-        chunks[Team.GREEN] = mutableListOf()
-        chunks[Team.YELLOW] = mutableListOf()
         val mapView: MapView = Bukkit.createMap(overWorld)
 
         mapID = mapView.id

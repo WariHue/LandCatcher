@@ -2,21 +2,26 @@ package com.github.warihue.landcatcher.core
 
 import com.github.warihue.landcatcher.Job
 import com.github.warihue.landcatcher.Team
+import com.github.warihue.landcatcher.core.damage.DamageSupport.ensureNonNegative
 import com.github.warihue.landcatcher.plugin.LandCatcherPlugin
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
-import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
 import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import java.util.*
+
 
 fun masterLandCatcher(): ItemStack {
     val startLandCatcher = ItemStack(Material.PAPER)
@@ -64,24 +69,6 @@ fun stealLandCatcher(team: Team): ItemStack {
             startLandCatcher.itemMeta = itemMeta
             return startLandCatcher
         }
-        Team.GREEN -> {
-            itemMeta.setCustomModelData(7)
-            itemMeta.displayName(text("초록팀 땅 인수 증서").decorate(TextDecoration.BOLD).color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false))
-            itemMeta.lore(listOf<Component>(
-                text("점령한 땅 근처의 초록팀의 땅을 점령한다").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-            ))
-            startLandCatcher.itemMeta = itemMeta
-            return startLandCatcher
-        }
-        Team.YELLOW -> {
-            itemMeta.setCustomModelData(8)
-            itemMeta.displayName(text("노랑팀 땅 인수 증서").decorate(TextDecoration.BOLD).color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false))
-            itemMeta.lore(listOf<Component>(
-                text("점령한 땅 근처의 노랑팀의 땅을 점령한다").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-            ))
-            startLandCatcher.itemMeta = itemMeta
-            return startLandCatcher
-        }
         else -> {
             itemMeta.setCustomModelData(3)
             itemMeta.displayName(text("백지 땅 인수 증서").decorate(TextDecoration.BOLD).color(NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false))
@@ -104,7 +91,7 @@ fun damageGun(level: Int = 1): ItemStack {
     itemMeta.lore(listOf<Component>(
         text("그냥 평범한 탄 발사기").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
         text("RangedDamage(${level * 2})").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("발사 0.4s 마다").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("발사 1.0s 마다").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
     ))
     damageGun.itemMeta = itemMeta
     return damageGun
@@ -119,7 +106,7 @@ fun healGun(level: Int = 1): ItemStack {
     itemMeta.lore(listOf<Component>(
         text("생체 독 발사기, 아군에겐 약이다").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
         text("Heal(${level})").color(NamedTextColor.BLUE).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("적 타격 시 독 3s").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("적 타격 시 생체 독 3s").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
         text("발사 0.6s 마다").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
 
     ))
@@ -135,9 +122,9 @@ fun bombLauncher(level: Int = 1): ItemStack {
     itemMeta.displayName(text("캐논").decorate(TextDecoration.BOLD).color(NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false))
     itemMeta.lore(listOf<Component>(
         text("폭탄을 쏜다").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("추가 대미지(${level / 2})").color(NamedTextColor.BLUE).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("추가 대미지(${level / 2 + 5})").color(NamedTextColor.BLUE).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
         text("폭발 크기(${level / 2})").color(NamedTextColor.BLUE).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("발사 5s 마다").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("발사 4s 마다").color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
         ))
     healGun.itemMeta = itemMeta
     return healGun
@@ -151,7 +138,7 @@ fun daggerSword(level: Int = 1): ItemStack {
     itemMeta.displayName(text("펜니르의 단검").decorate(TextDecoration.BOLD).color(NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false))
     itemMeta.lore(listOf<Component>(
         text("SKILL: 은신 6s (cooldown: 20s, 적 치치 시 초기화)").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("은신 시 추가 대미지(${level * 2})").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false)
+        text("은신 시 대미지(${level * 2 + 5}), 방어력 무시(${(level - 2).ensureNonNegative()})").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false)
     ))
     itemMeta.removeAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE)
     itemMeta.removeAttributeModifier(Attribute.GENERIC_ATTACK_SPEED)
@@ -183,8 +170,10 @@ fun hammerAxe(level: Int = 1): ItemStack {
     itemMeta.setCustomModelData(2)
     itemMeta.displayName(text("터-보 망치").decorate(TextDecoration.BOLD).color(NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false))
     itemMeta.lore(listOf<Component>(
-        text("SKILL: 강타!(5s마다 강하게 내리쳐 주위의 적에게 ${(level * 2) + 5}만큼의 대미지를 입힌다)").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
-        text("MELEE(${(level * 2) + 5})").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false)
+        text("SKILL: 강타!(5s마다 강하게 내리쳐 주위의 적에게 ${((level /2))}만큼의 대미지를 입힌다)").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("MELEE(${((level /2))})").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("기절 1s").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+        text("방패 파괴 20s").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
     ))
     itemMeta.removeAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE)
     itemMeta.removeAttributeModifier(Attribute.GENERIC_ATTACK_SPEED)
@@ -207,6 +196,28 @@ fun hammerAxe(level: Int = 1): ItemStack {
     itemMeta.isUnbreakable = true
     hammerAxe.itemMeta = itemMeta
     return hammerAxe
+}
+
+fun obsidianPotion(): ItemStack {
+    val potion = ItemStack(Material.POTION) // 일반 포션 아이템 생성
+    val meta = potion.itemMeta as PotionMeta
+
+
+    // 포션 메타 데이터 설정
+    meta.displayName(text("흑요석 포션").decorate(TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false).color(
+        TextColor.color(255, 127, 0))) // 포션의 이름 설정
+    meta.addCustomEffect(PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 1), true)// 커스텀 효과 추가
+
+    meta.lore(
+        listOf(
+            text("적 팀에 들어 갔을 때 자기장에 불 타는 것을 막을 수 있다").color(NamedTextColor.YELLOW),
+            text("화염저항은 보너스").color(NamedTextColor.YELLOW),
+        )
+    )
+
+
+    potion.setItemMeta(meta)
+    return potion
 }
 
 fun ItemStack.correctChecker(itemStack: ItemStack): Boolean{
@@ -242,8 +253,6 @@ fun ItemStack.itemTeamChecker(): Team {
         return when(itemMeta.customModelData){
             5 -> Team.BLUE
             6 -> Team.RED
-            7 -> Team.GREEN
-            8 -> Team.YELLOW
             else -> Team.NONE
         }
     }

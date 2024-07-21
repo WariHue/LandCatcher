@@ -3,10 +3,10 @@ package com.github.warihue.landcatcher.core.inventory
 import com.github.warihue.landcatcher.Team
 import com.github.warihue.landcatcher.core.*
 import com.github.warihue.landcatcher.plugin.LandCatcherPlugin
+import com.github.warihue.landcatcher.spawnLocation
 import io.github.monun.heartbeat.coroutines.HeartbeatScope
 import io.github.monun.heartbeat.coroutines.Suspension
 import io.github.monun.invfx.InvFX.frame
-import io.github.monun.invfx.openFrame
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
@@ -26,7 +26,6 @@ object MenuGUI {
                 if(clickEvent.currentItem == null) return@onClickBottom
                 if(!isLCItem(clickEvent.currentItem!!)) return@onClickBottom
                 player.inventory.removeItem(clickEvent.currentItem!!)
-                player.sendMessage("Aa")
             }
             slot(1, 0){
                 val item = changeLCatchToItem(lPlayer.job, lPlayer.level)
@@ -34,7 +33,7 @@ object MenuGUI {
                 meta.displayName(text("아이템 다시 얻기").decoration(TextDecoration.ITALIC, false).decorate(TextDecoration.BOLD))
                 meta.lore(
                     listOf(
-                        text("여기서 인벤토리의 무기를 누르면 삭제")
+                        text("여기서 인벤토리의 무기를 누르면 삭제").decoration(TextDecoration.ITALIC, false)
                     )
                 )
                 this.item = item
@@ -48,9 +47,10 @@ object MenuGUI {
                 meta.displayName(text("귀환").decoration(TextDecoration.ITALIC, false).decorate(TextDecoration.BOLD))
                 meta.lore(
                     listOf(
-                        text("30초간 움직이지 않으면 스폰으로 귀환합니다")
+                        text("30초간 움직이지 않으면 스폰으로 귀환합니다(귀환의 성공/실패 여부는 30초 뒤에 확인가능)").decoration(TextDecoration.ITALIC, false)
                     )
                 )
+                item.itemMeta = meta
                 this.item = item
                 onClick {
                     val location = player.location
@@ -59,10 +59,12 @@ object MenuGUI {
                     HeartbeatScope().launch {
                         val suspension = Suspension()
                         suspension.delay(30000L)
-                        if(location == player.location)
-                            player.teleport(player.bedSpawnLocation!!)
+                        val data = LandCatcherPlugin.instance.players[player]!!
+                        if(location.x == player.location.x && location.y == player.location.y && location.z == player.location.z)
+                            player.teleport(spawnLocation(data.team, player))
                         else
                             player.sendActionBar(text("귀환 실패").color(NamedTextColor.RED))
+
                     }
                 }
             }
@@ -72,9 +74,10 @@ object MenuGUI {
                 meta.displayName(text("빈 땅 매매증서 구매").decoration(TextDecoration.ITALIC, false).decorate(TextDecoration.BOLD))
                 meta.lore(
                     listOf(
-                        text("철 주괴 x 3")
+                        text("철 주괴 x 3").decoration(TextDecoration.ITALIC, false)
                     )
                 )
+                item.itemMeta = meta
                 this.item = item
                 onClick {
                     if(player.inventory.slotFounder(ItemStack(Material.IRON_INGOT)) != -1) {
@@ -91,14 +94,15 @@ object MenuGUI {
                 meta.displayName(text("백지 땅 인수증서 구매").decoration(TextDecoration.ITALIC, false).decorate(TextDecoration.BOLD))
                 meta.lore(
                     listOf(
-                        text("다이아몬드 x 2")
+                        text("다이아몬드 x 2").decoration(TextDecoration.ITALIC, false)
                     )
                 )
+                item.itemMeta = meta
                 this.item = item
                 onClick {
                     if(player.inventory.slotFounder(ItemStack(Material.DIAMOND)) != -1) {
                         if (player.inventory.getItem(player.inventory.slotFounder(ItemStack(Material.DIAMOND)))!!.amount >= 2) {
-                            player.inventory.removeItem(ItemStack(Material.IRON_INGOT, 2))
+                            player.inventory.removeItem(ItemStack(Material.DIAMOND, 2))
                             player.inventory.addItem(stealLandCatcher(Team.NONE))
                         }
                     }

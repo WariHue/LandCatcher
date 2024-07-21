@@ -8,9 +8,6 @@ import com.github.warihue.landcatcher.core.*
 import com.github.warihue.landcatcher.core.SaveManager.existsPlayerData
 import com.github.warihue.landcatcher.core.SaveManager.readPlayerData
 import com.github.warihue.landcatcher.core.SaveManager.writePlayerData
-import org.bukkit.entity.Entity
-import org.bukkit.entity.LivingEntity
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -19,15 +16,21 @@ import com.github.warihue.landcatcher.core.damage.DamageType
 import com.github.warihue.landcatcher.core.inventory.EnchantGUI.openEnchantTable
 import com.github.warihue.landcatcher.core.inventory.UpgradeAnvil.openUpgradeTable
 import com.github.warihue.landcatcher.core.util.ChunkManager
+import com.github.warihue.landcatcher.core.util.ChunkManager.isChunkEnemy
+import com.github.warihue.landcatcher.core.util.ChunkManager.isChunkNotBelongTeam
+import com.github.warihue.landcatcher.spawnLocation
+import io.papermc.paper.event.player.PlayerBedFailEnterEvent
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.*
-import org.bukkit.entity.Item
+import org.bukkit.entity.*
 import org.bukkit.event.Cancellable
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -37,9 +40,9 @@ import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
+import kotlin.math.cos
 
 class EventListener : Listener {
-
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
         if(!event.player.existsPlayerData()) {
@@ -53,27 +56,8 @@ class EventListener : Listener {
         val data = readPlayerData(event.player.uniqueId)
         LandCatcherPlugin.instance.players[event.player] = data
         LandCatcherPlugin.instance.teams[data.team]!!.add(event.player)
-        when(data.team){
-            Team.BLUE -> {
-                event.player.bedSpawnLocation = Location(LandCatcherPlugin.overWorld, -247.5, 73.0, 247.5)
-                event.player.teleport(Location(LandCatcherPlugin.overWorld, -247.5, 73.0, 247.5))
-            }
-            Team.YELLOW -> {
-                event.player.bedSpawnLocation = Location(LandCatcherPlugin.overWorld, 247.5, 63.0, -247.5)
-                event.player.teleport(Location(LandCatcherPlugin.overWorld, 247.5, 63.0, -247.5))
-            }
-            Team.GREEN -> {
-                event.player.bedSpawnLocation = Location(LandCatcherPlugin.overWorld, -247.5, 73.0, -247.5)
-                event.player.teleport(Location(LandCatcherPlugin.overWorld, -247.5, 73.0, -247.5))
-            }Team.RED -> {
-                event.player.bedSpawnLocation = Location(LandCatcherPlugin.overWorld, 247.5, 73.0, 247.5)
-                event.player.teleport(Location(LandCatcherPlugin.overWorld, 247.5, 73.0, 247.5))
-            }
-            else -> {
-                event.player.bedSpawnLocation = Location(LandCatcherPlugin.overWorld, 0.5, 0.0, 0.5)
-                event.player.teleport(Location(LandCatcherPlugin.overWorld, 0.5, 0.0, 0.5))
-            }
-        }
+        if(event.player.inventory.isEmpty)
+            event.player.teleport(spawnLocation(data.team, event.player))
     }
 
     @EventHandler
@@ -82,12 +66,71 @@ class EventListener : Listener {
             LandCatcherPlugin.fakeServer.removePlayer(event.player)
             writePlayerData(event.player.uniqueId, LandCatcherPlugin.instance.players[event.player]!!)
         }
+        LandCatcherPlugin.magneticDamage.removeFiredPlayer(event.player)
     }
 
     @EventHandler
-    fun playerSetSpawn(event: PlayerSetSpawnEvent){
-        event.player.sendMessage(text("스폰을 설정할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+    fun playerPlaceBlock(event: BlockPlaceEvent) {
+        if(isChunkNotBelongTeam(LandCatcherPlugin.instance.players[event.player]!!.team, event.player.chunk)){
+            event.isCancelled = true
+            event.player.sendMessage(text("다른 팀의 땅에 블록을 설치/파괴할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+        }
+    }
+
+    @EventHandler
+    fun playerBreakBlock(event: BlockBreakEvent) {
+        if(isChunkNotBelongTeam(LandCatcherPlugin.instance.players[event.player]!!.team, event.player.chunk)){
+            event.isCancelled = true
+            event.player.sendMessage(text("다른 팀의 땅에 블록을 설치/파괴할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+        }
+    }
+
+    @EventHandler
+    fun playaerInt(event: PlayerInteractEntityEvent){
+        if(isChunkNotBelongTeam(LandCatcherPlugin.instance.players[event.player]!!.team, event.player.chunk)){
+            if(event.rightClicked.type == EntityType.MINECART_CHEST ||
+                event.rightClicked.type == EntityType.MINECART_HOPPER ||
+                event.rightClicked.type == EntityType.MINECART_FURNACE ||
+                event.rightClicked.type == EntityType.CHEST_BOAT){
+                event.isCancelled = true
+                event.player.sendMessage(text("다른 팀의 땅 내의 상자 또는 보관 블록에 접근할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+            }
+        }
+    }
+
+    @EventHandler
+    fun playerIn(event: PlayerInteractEvent){
+        if(event.action == Action.RIGHT_CLICK_BLOCK && isChunkNotBelongTeam(LandCatcherPlugin.instance.players[event.player]!!.team, event.player.chunk)){
+            val block = event.clickedBlock!!
+            if(block.type == Material.CHEST ||
+                block.type == Material.TRAPPED_CHEST ||
+                block.type == Material.BARREL ||
+                block.type == Material.ENDER_CHEST ||
+                block.type == Material.DISPENSER ||
+                block.type == Material.DROPPER ||
+                block.type == Material.HOPPER ||
+                block.type == Material.FURNACE ||
+                block.type == Material.SMOKER ||
+                block.type == Material.BLAST_FURNACE ||
+                block.type == Material.BREWING_STAND ||
+                block.type == Material.JUKEBOX ||
+                block.type == Material.LECTERN){
+                event.isCancelled = true
+                event.player.sendMessage(text("다른 팀의 땅 내의 상자 또는 보관 블록에 접근할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+            }
+        }
+    }
+
+    @EventHandler
+    fun playerSetSpawnEvent(event: PlayerSetSpawnEvent) {
         event.isCancelled = true
+        event.player.sendMessage(text("리스폰 지점을 설정할 수 없습니다").decorate(TextDecoration.BOLD).color(NamedTextColor.RED))
+    }
+
+    @EventHandler
+    fun playerRespawnEvent(event: PlayerRespawnEvent) {
+        val data = LandCatcherPlugin.instance.players[event.player]!!
+        event.respawnLocation = spawnLocation(data.team, event.player)
     }
 
     @EventHandler
@@ -126,7 +169,12 @@ class EventListener : Listener {
 
     @EventHandler
     fun playerDeath(event: PlayerDeathEvent){
+        val data = LandCatcherPlugin.instance.players[event.player]!!
         event.deathMessage(text("사람이 죽었다.").color(NamedTextColor.RED).decorate(TextDecoration.BOLD))
+        event.player.world.dropItemNaturally(event.player.location, stealLandCatcher(data.team))
+        val drops = event.drops
+        event.drops.clear()
+        event.drops.addAll(drops.filter { itemStack -> !isLCItem(itemStack) })
     }
 
     @EventHandler
@@ -150,5 +198,13 @@ class EventListener : Listener {
                 event.player.inventory.setItemInOffHand(null)
             }
         }
+    }
+
+    @EventHandler
+    fun onMove(event: PlayerMoveEvent){
+        if(isChunkEnemy(LandCatcherPlugin.instance.players[event.player]!!.team, event.player.chunk))
+            LandCatcherPlugin.magneticDamage.addFiredPlayer(event.player)
+        else
+            LandCatcherPlugin.magneticDamage.removeFiredPlayer(event.player)
     }
 }

@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.vehicle.VehicleEnterEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.potion.PotionEffectType
 
 class GunsEventListener: Listener {
     @EventHandler
@@ -20,6 +21,7 @@ class GunsEventListener: Listener {
         val player = event.player
         val action = event.action
         if(action.isRightClick) {
+            if(player.hasPotionEffect(PotionEffectType.BLINDNESS)) return
             if(player.inventory.itemInMainHand.correctChecker(damageGun())) {
                 if (LandCatcherPlugin.instance.players[player]!!.job != Job.GUNNER) return
                 event.isCancelled = true
@@ -37,7 +39,7 @@ class GunsEventListener: Listener {
                 Bullet.manager.launch(loc, bullet)
                 bullet.velocity = location.direction.multiply(4)
                 player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 2.0F, .5F)
-                player.setCooldown(Material.DIAMOND_HORSE_ARMOR, 8)
+                player.setCooldown(Material.DIAMOND_HORSE_ARMOR, 20)
             }
             if(player.inventory.itemInMainHand.correctChecker(healGun())){
                 if (LandCatcherPlugin.instance.players[player]!!.job != Job.HEALER) return
@@ -74,7 +76,7 @@ class GunsEventListener: Listener {
                 Bomb.manager.launch(loc, bomb)
                 bomb.velocity = location.direction.multiply(1)
                 player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 2.0F, .1F)
-                player.setCooldown(Material.DIAMOND_HORSE_ARMOR, 100)
+                player.setCooldown(Material.DIAMOND_HORSE_ARMOR, 80)
             }
         }
     }
@@ -83,6 +85,7 @@ class GunsEventListener: Listener {
         val player = event.player
         if (player.inventory.itemInMainHand.correctChecker(damageGun()) || player.inventory.itemInMainHand.correctChecker(healGun()) || player.inventory.itemInMainHand.correctChecker(daggerSword()))
             event.isCancelled = true
+        if(player.hasPotionEffect(PotionEffectType.BLINDNESS)) return
             if(player.inventory.itemInMainHand.correctChecker(damageGun())) {
                 event.isCancelled = true
                 if(player.inventory.slotFounder(ItemStack(Material.IRON_NUGGET)) == -1){player.world.playSound(player.location, Sound.BLOCK_CHAIN_PLACE, 0.8F, 1.5F); return}

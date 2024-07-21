@@ -47,6 +47,9 @@ open class Bullet(
     fun setToLaunch(): Bullet {
         return apply { bulletArmor = summonBulletArmor(shooter.location) }
     }
+    override fun onPreUpdate() {
+        velocity = velocity.apply { y -= 0.003 }
+    }
 
     final override fun onMove(movement: Movement) {
         val to = movement.to
@@ -87,13 +90,13 @@ open class Bullet(
                                     (hitEntity.yaw + 90).toDouble()
                                 ) < 45
                             ) {
-                                hitEntity.activeItem.itemMeta.apply {
+                                hitEntity.activeItem.itemMeta.let {
                                     damage(damage - this@Bullet.damage)
                                 }
                                 return@updateMetadata
                             }
                         }
-                        hitEntity.lCatchDamage(DamageType.RANGED, damage, shooter, shooter.location, 0.2)
+                        hitEntity.lCatchDamage(DamageType.RANGED, damage, shooter, 0.0, shooter.location, 0.2)
                         world.spawnParticle(
                             Particle.BLOCK_DUST,
                             hitLocation,

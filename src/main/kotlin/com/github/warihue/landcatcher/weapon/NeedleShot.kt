@@ -1,7 +1,9 @@
 package com.github.warihue.landcatcher.weapon
 
 import com.github.warihue.landcatcher.core.damage.DamageSupport.calculateAngle
+import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchDamage
 import com.github.warihue.landcatcher.core.damage.DamageSupport.lCatchHeal
+import com.github.warihue.landcatcher.core.damage.DamageType
 import com.github.warihue.landcatcher.core.util.TargetFilter
 import com.github.warihue.landcatcher.plugin.LandCatcherPlugin
 import io.github.monun.tap.fake.*
@@ -47,6 +49,10 @@ open class NeedleShot(
 
     fun setToLaunch(): NeedleShot {
         return apply { needleArmor = summonBulletArmor(shooter.location) }
+    }
+
+    override fun onPreUpdate() {
+        velocity = velocity.apply { y -= 0.003 }
     }
 
     final override fun onMove(movement: Movement) {
@@ -95,13 +101,14 @@ open class NeedleShot(
                                     (hitEntity.yaw + 90).toDouble()
                                 ) < 45
                             ) {
-                                hitEntity.activeItem.itemMeta.apply {
+                                hitEntity.activeItem.itemMeta.let {
                                     damage(heal - this@NeedleShot.heal)
                                 }
                                 return@updateMetadata
                             }
                         }
-                        hitEntity.addPotionEffect(PotionEffect(PotionEffectType.POISON, 90, 3, false, false, false))
+                        hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WITHER, 60, 6, false, false, false))
+                        hitEntity.lCatchDamage(DamageType.RANGED, 0.0, shooter, 0.0, shooter.location, 0.1)
                         world.spawnParticle(
                             Particle.SLIME,
                             hitLocation,

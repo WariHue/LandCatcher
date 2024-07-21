@@ -53,23 +53,25 @@ object DamageSupport {
         damageType: DamageType,
         damage: Double,
         damager: Player,
+        piercinForce: Double = 0.0,
         knockbackSource: Location? = damager.location,
         knockbackForce: Double = 0.0
     ): Double {
-        return lCatchDamageActual(damageType, damage, damager, knockbackSource, knockbackForce)
+        return lCatchDamageActual(damageType, damage, damager,piercinForce ,knockbackSource, knockbackForce)
     }
 
     private fun LivingEntity.lCatchDamageActual(
         type: DamageType,
         damage: Double,
         damager: Player,
+        piercinForce: Double = 0.0,
         knockbackSource: Location? = damager.location,
         knockbackForce: Double = 0.0
     ): Double {
         val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
         val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
         val protection = getProtection(type.protection)
-        val actualDamage = calculateMinecraftDamage(damage, armor, armorTough, protection.toDouble())
+        val actualDamage = calculateMinecraftDamage(damage, armor - piercinForce, armorTough - piercinForce / 4, protection.toDouble())
         killer = damager
         if (knockbackSource != null && knockbackForce > 0.0) {
             val targetLocation = location
@@ -142,5 +144,11 @@ object DamageSupport {
 
         // 각도를 도 단위로 변환
         return Math.toDegrees(angle)
+    }
+    fun Double.ensureNonNegative(): Double {
+        return if (this < 0.0) 0.0 else this
+    }
+    fun Int.ensureNonNegative(): Int {
+        return if (this < 0) 0 else this
     }
 }
