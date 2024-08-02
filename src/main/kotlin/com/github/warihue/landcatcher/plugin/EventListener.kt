@@ -137,16 +137,22 @@ class EventListener : Listener {
     fun playerItemClickEvent(event: InventoryClickEvent){
         if(event.whoClicked.gameMode != GameMode.CREATIVE) {
             if(event.inventory.type == InventoryType.CRAFTING) return
-            if (event.currentItem != null && event.currentItem!!.correctChecker(damageGun()) ||
-                event.currentItem!!.correctChecker(healGun()) ||
-                event.currentItem!!.correctChecker(daggerSword()) ||
-                event.currentItem!!.correctChecker(hammerAxe()) ||
-                event.currentItem!!.correctChecker(bombLauncher())
-            ) {
-                if(event.whoClicked.openInventory.title() == text("\uEBBB\uEDDD", TextColor.color(255, 255, 255))) return
-                event.whoClicked.sendMessage(event.inventory.type.toString())
-                event.isCancelled = true
-                return
+            if(event.currentItem != null) {
+                if (event.currentItem!!.correctChecker(damageGun()) ||
+                    event.currentItem!!.correctChecker(healGun()) ||
+                    event.currentItem!!.correctChecker(daggerSword()) ||
+                    event.currentItem!!.correctChecker(hammerAxe()) ||
+                    event.currentItem!!.correctChecker(bombLauncher())
+                ) {
+                    if (event.whoClicked.openInventory.title() == text(
+                            "\uEBBB\uEDDD",
+                            TextColor.color(255, 255, 255)
+                        )
+                    ) return
+                    event.whoClicked.sendMessage(event.inventory.type.toString())
+                    event.isCancelled = true
+                    return
+                }
             }
         }
         event.isCancelled = false

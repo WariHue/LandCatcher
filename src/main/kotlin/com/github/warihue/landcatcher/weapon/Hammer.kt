@@ -32,7 +32,7 @@ class Hammer: Listener {
         event.entity.world.spawnParticle(Particle.EXPLOSION_HUGE, event.entity.location, 3, 0.0, 0.0, 0.0, 2.0)
         event.entity.world.playSound(player.location, Sound.ENTITY_GHAST_SHOOT, 6f, 1f)
         val entitiesTemp:List<Entity> = event.entity.getNearbyEntities(3.0,3.0,3.0)
-        (event.entity as LivingEntity).lCatchDamage(DamageType.MELEE, ((level /2)).toDouble(), player, 0.0,player.location, 1.0)
+        (event.entity as LivingEntity).lCatchDamage(DamageType.MELEE, ((level /2)).toDouble(), player, 0.0,player.location, 2.0)
         (event.entity as LivingEntity).addPotionEffect(PotionEffect(PotionEffectType.JUMP, 60, 200, false, false, false))
         (event.entity as LivingEntity).addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 127, false, false, false))
         (event.entity as LivingEntity).addPotionEffect(PotionEffect(PotionEffectType.SLOW, 60, 200, false, false, false))
@@ -41,7 +41,7 @@ class Hammer: Listener {
         val entities:List<Entity> = entitiesTemp.filter { it != player }
         for(en: Entity in entities){
             if(en is LivingEntity) {
-                en.lCatchDamage(DamageType.MELEE, ((level /2)).toDouble(), player, 0.0, event.entity.location, 1.0)
+                en.lCatchDamage(DamageType.MELEE, ((level /2)).toDouble(), player, 0.0, event.entity.location, 2.0)
                 en.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 20, 200, false, false, false))
                 en.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20, 127, false, false, false))
                 en.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 20, 200, false, false, false))

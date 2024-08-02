@@ -38,11 +38,7 @@ class Dagger: Listener {
             e.isCancelled = true
             if(player.hasCooldown(Material.NETHERITE_SWORD)) { player.sendMessage(text("쿨다운 중 입니다!").color(NamedTextColor.RED)); return }
             for (data in LandCatcherPlugin.instance.players.keys){
-                player.setCooldown(Material.NETHERITE_SWORD, 400)
                 data.hidePlayer(LandCatcherPlugin.instance, player)
-                hidePlayers.add(player)
-                player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 80, 3, false, false, false))
-                player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 80, 2, false, false, false))
                 HeartbeatScope().launch {
                     val suspension = Suspension()
                     suspension.delay(6000)
@@ -51,6 +47,10 @@ class Dagger: Listener {
                     player.sendActionBar(text(""))
                 }
             }
+            player.setCooldown(Material.NETHERITE_SWORD, 400)
+            hidePlayers.add(player)
+            player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 80, 3, false, false, false))
+            player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 80, 2, false, false, false))
         }
     }
     @EventHandler
@@ -97,11 +97,6 @@ class Dagger: Listener {
                     return
                 }
                 if(hidePlayers.any { p -> p == player }){
-                    val level = player.inventory.itemInMainHand.itemMeta.persistentDataContainer.get(LandCatcherPlugin.itemKey, PersistentDataType.INTEGER)!!
-                    val piercing = (player.inventory.itemInMainHand.itemMeta.persistentDataContainer.get(LandCatcherPlugin.itemKey, PersistentDataType.INTEGER)!! - 2).toDouble().ensureNonNegative()
-                    val damage: Double = entity.lCatchDamage(DamageType.MELEE, (level * 2 + 5).toDouble(), player, piercing)
-                    if(damage  >= entity.health)
-                        player.setCooldown(Material.NETHERITE_SWORD, 0)
                     hidePlayers.remove(player)
                     for (data in LandCatcherPlugin.instance.players.keys){
                         data.showPlayer(LandCatcherPlugin.instance, player)
@@ -109,6 +104,12 @@ class Dagger: Listener {
                     player.sendActionBar(text(""))
                     player.removePotionEffect(PotionEffectType.SPEED)
                     player.removePotionEffect(PotionEffectType.JUMP)
+                    val level = player.inventory.itemInMainHand.itemMeta.persistentDataContainer.get(LandCatcherPlugin.itemKey, PersistentDataType.INTEGER)!!
+                    val piercing = (player.inventory.itemInMainHand.itemMeta.persistentDataContainer.get(LandCatcherPlugin.itemKey, PersistentDataType.INTEGER)!! - 2).toDouble().ensureNonNegative()
+                    val health = entity.health + 0
+                    val damage: Double = entity.lCatchDamage(DamageType.MELEE, (level * 2 + 5).toDouble(), player, piercing)
+                    if(damage  >= health)
+                        player.setCooldown(Material.NETHERITE_SWORD, 0)
                 }
             }
         }

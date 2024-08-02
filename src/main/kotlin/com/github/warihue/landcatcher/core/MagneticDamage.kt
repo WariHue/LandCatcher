@@ -20,7 +20,6 @@ class MagneticDamage(
     }
 
     private fun updateManager() {
-        LandCatcherPlugin.instance.logger.info(players.toString())
         causeDamageToPlayer()
     }
 

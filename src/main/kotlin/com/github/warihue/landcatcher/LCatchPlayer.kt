@@ -29,10 +29,10 @@ enum class Job {
 fun spawnLocation(team: Team, player: Player): Location{
     return when(team){
         Team.BLUE -> {
-            Location(LandCatcherPlugin.overWorld, -247.5, 73.0, 247.5)
+            Location(LandCatcherPlugin.overWorld, 507.5, 67.0, 507.5)
         }
         Team.RED -> {
-            Location(LandCatcherPlugin.overWorld, 247.5, 127.0, 247.5)
+            Location(LandCatcherPlugin.overWorld, -507.5, 62.0, -507.5)
         }
         else -> {
             Location(LandCatcherPlugin.overWorld, 0.5, 0.0, 0.5)

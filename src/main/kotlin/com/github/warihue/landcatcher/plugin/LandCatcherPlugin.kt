@@ -6,6 +6,7 @@ import com.github.warihue.landcatcher.core.util.DataManager
 import com.github.warihue.landcatcher.LCatchPlayer
 import com.github.warihue.landcatcher.core.*
 import com.github.warihue.landcatcher.core.inventory.MenuGUI.openMenu
+import com.github.warihue.landcatcher.core.inventory.RecipeManager.obsidianPotionRecipe
 import com.github.warihue.landcatcher.weapon.*
 import io.github.monun.kommand.getValue
 import io.github.monun.kommand.kommand
@@ -129,7 +130,7 @@ class LandCatcherPlugin: JavaPlugin() {
         chunks[Team.BLUE] = mutableListOf()
         chunks[Team.RED] = mutableListOf()
         val mapView: MapView = Bukkit.createMap(overWorld)
-
+        obsidianPotionRecipe()
         mapID = mapView.id
     }
 }
